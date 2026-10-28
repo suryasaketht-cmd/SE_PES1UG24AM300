@@ -1,15 +1,1 @@
-Rooms: ['A1', 'A2', 'A3', 'B1', 'B2']
-S1 -> A1
-S2 -> A1
-S3 -> A1
-S4 (female) -> A2
-S1 again -> A2
-S5 year '2' -> None
-Occupants of A1: ['S1', 'S2', 'S3']
-Occupants of A1 after S2 left: ['S1', 'S2', 'S3']
-Fee for S1, 45 days: 4000
-Priority (seniors first?): [1, 2, 4]
-Lottery: ['S7', 'S6', 'S8']
-Vacant beds: 8
-Warden DB: {'host': 'localhost', 'user': 'warden', 'connected': True}
-Waitlist: []
+
