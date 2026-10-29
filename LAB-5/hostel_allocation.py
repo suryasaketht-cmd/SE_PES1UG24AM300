@@ -1,5 +1,4 @@
 import os
-import sys
 import random
 import yaml
 from flask import Flask, request
@@ -17,17 +16,23 @@ blocks:
   B: {gender: F, rooms: 2, capacity: 3, fee: 3500}
 """
 
+
 def loadConfig(text=CONFIG):
     config = yaml.safe_load(text)
     for block in config["blocks"]:
         info = config["blocks"][block]
         for n in range(1, info["rooms"] + 1):
-            rooms[block + str(n)] = {"gender": info["gender"], "capacity": info["capacity"],
-                                     "fee": info["fee"], "occupants": []}
+            rooms[block + str(n)] = {
+                "gender": info["gender"],
+                "capacity": info["capacity"],
+                "fee": info["fee"],
+                "occupants": [],
+            }
     return config
 
+
 def allocateRoom(student_id, name, gender, year, preferred=[]):
-    if type(year) != int:
+    if not isinstance(year, int):
         return None
     for room_no in preferred + list(rooms.keys()):
         room = rooms[room_no]
@@ -38,22 +43,27 @@ def allocateRoom(student_id, name, gender, year, preferred=[]):
         return room_no
     waitlist.append(student_id)
 
+
 def vacateRoom(student_id):
     if student_id in allocations:
         del allocations[student_id]
     else:
         pass
 
+
 def monthlyFee(student_id, days_stayed):
     room = rooms[allocations[student_id]["room"]]
     months = days_stayed // 30
     return months * room["fee"]
 
+
 def priorityOrder(students):
     return sorted(students, key=lambda s: s["year"])
 
+
 def roomLottery(student_ids):
     return random.SystemRandom().sample(student_ids, len(student_ids))
+
 
 def vacantBeds():
     total = 0
@@ -62,11 +72,18 @@ def vacantBeds():
             total = total + rooms[r]["capacity"]
     return total
 
+
 def connectWardenDb():
-    return sqlite_connect(host="localhost", user="warden", password=os.environ.get("WARDEN_DB_PASSWORD", ""))
+    return sqlite_connect(
+        host="localhost",
+        user="warden",
+        password=os.environ.get("WARDEN_DB_PASSWORD", ""),
+    )
+
 
 def sqlite_connect(host, user, password):
     return {"host": host, "user": user, "connected": len(password) > 0}
+
 
 @app.route("/room")
 def roomLookup():
@@ -74,8 +91,10 @@ def roomLookup():
     return "<h1>Room for " + str(escape(sid)) + ": " + \
         str(escape(allocations.get(sid))) + "</h1>"
 
+
 def runPortal():
     app.run(host="127.0.0.1", debug=False)
+
 
 def main():
     loadConfig()
@@ -90,10 +109,14 @@ def main():
     vacateRoom("S2")
     print("Occupants of A1 after S2 left:", rooms["A1"]["occupants"])
     print("Fee for S1, 45 days:", monthlyFee("S1", 45))
-    print("Priority (seniors first?):", [s["year"] for s in priorityOrder([{"year": 1}, {"year": 4}, {"year": 2}])])
+    students = [{"year": 1}, {"year": 4}, {"year": 2}]
+    print("Priority (seniors first?):",
+          [s["year"] for s in priorityOrder(students)])
     print("Lottery:", roomLottery(["S6", "S7", "S8"]))
     print("Vacant beds:", vacantBeds())
     print("Warden DB:", connectWardenDb())
     print("Waitlist:", waitlist)
 
-main()
+
+if __name__ == "__main__":
+    main()
